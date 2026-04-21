@@ -65,7 +65,10 @@ graph TD
 | **Observability** | **Prometheus**, **Grafana**, **ELK Stack**, Jaeger |
 | **Service Mesh** | **Istio** (mTLS, Traffic Management) |
 | **Orchestration** | **Kubernetes** (EKS/GKE/AKS), Helm Charts |
-| **Infrastructure** | **Terraform**, **Docker**, ArgoCD (GitOps) |
+| **Automation** | **Terraform**, **Docker**, ArgoCD (GitOps) |
+| **Unit Testing** | **Jest** (Node.js/React) |
+| **E2E Testing** | **Playwright** |
+| **Linting** | **ESLint** |
 
 ---
 
@@ -175,8 +178,27 @@ npm run lint
 
 ---
 
-## 🏁 Future Roadmap
-1. **🔐 End-to-End Encryption**: Implement Signal Protocol for secure messaging.
-2. **📞 Voice/Video Calls**: Integrate WebRTC for real-time media streaming.
-3. **🤖 Chat Bots**: Add an AI-powered service for automated moderation and assistance.
-4. **📦 Object Storage**: Integrate AWS S3 for rich media sharing (images, videos).
+## 🔧 Troubleshooting & Recovery
+| Issue | Potential Cause | Resolution |
+| :--- | :--- | :--- |
+| **WebSocket Connection Failed** | Ingress or Gateway config | Check `api-gateway` logs and ensure `ws: true` is set in proxy. |
+| **Kafka Connection Error** | Broker not ready | Ensure Kafka container is healthy via `docker-compose ps`. |
+| **401 Unauthorized** | Expired/Missing JWT | Clear cookies and re-login via the Auth Service. |
+| **Mongo Connection Timeout** | Database not initialized | Check MongoDB logs and ensure volume permissions are correct. |
+
+---
+
+## 🏁 Expected Results
+1. **Unified Real-time Experience**: A seamless, low-latency chat interface for all users.
+2. **Horizontal Scalability**: Kubernetes-ready for auto-scaling based on WebSocket traffic.
+3. **Event Integrity**: Zero-loss notification delivery via Kafka's resilient buffering.
+4. **Engineering Excellence**: 100% test coverage for core business logic and event flows.
+
+---
+
+## 🚀 Future Roadmap: Next Level Enhancements
+1. **🔐 End-to-End Encryption**: Implement Signal Protocol for secure, private messaging.
+2. **📞 Voice/Video Calls**: Integrate WebRTC for high-quality real-time media streaming.
+3. **🤖 AI Moderation**: Add an AI service for automated content filtering and sentiment analysis.
+4. **📦 Multi-Cloud Deployment**: Automated GitOps pipelines for AWS, Azure, and GCP.
+5. **📜 Rich Media**: Support for file sharing, link previews, and interactive message components.
