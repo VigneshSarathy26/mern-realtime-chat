@@ -1,204 +1,281 @@
-# 💬⚡ Real-time Chat Platform - Cloud-Native MERN Ecosystem
-[![Node.js 20](https://img.shields.io/badge/Node.js-20-blue?logo=node.js)](https://nodejs.org/)
-[![TypeScript](https://img.shields.io/badge/TypeScript-5.2-blue?logo=typescript)](https://www.typescriptlang.org/)
-[![Kafka](https://img.shields.io/badge/Kafka-3.6-black?logo=apachekafka)](https://kafka.apache.org/)
-[![Kubernetes](https://img.shields.io/badge/Kubernetes-1.28-blue?logo=kubernetes)](https://kubernetes.io/)
+# 💬⚡ Real-time Chat Platform — Cloud-Native MERN Ecosystem
+
+[![Node.js 20](https://img.shields.io/badge/Node.js-20-339933?logo=node.js&logoColor=white)](https://nodejs.org/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.2-3178C6?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
+[![Apache Kafka](https://img.shields.io/badge/Apache%20Kafka-Latest-231F20?logo=apachekafka&logoColor=white)](https://kafka.apache.org/)
+[![MongoDB](https://img.shields.io/badge/MongoDB-Latest-47A248?logo=mongodb&logoColor=white)](https://www.mongodb.com/)
+[![Kubernetes](https://img.shields.io/badge/Kubernetes-1.28-326CE5?logo=kubernetes&logoColor=white)](https://kubernetes.io/)
+[![Docker](https://img.shields.io/badge/Docker-Compose-2496ED?logo=docker&logoColor=white)](https://www.docker.com/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-> **A high-performance, production-ready MERN stack chat application engineered for sub-millisecond real-time communication, event-driven resilience, and enterprise-grade observability.**
+> **A high-performance, production-ready MERN stack chat platform engineered for sub-millisecond real-time communication, event-driven resilience, and enterprise-grade observability.**
 
 ---
 
 ## 🎯 Core Vision & Strategic Value
-This platform is architected as an **Enterprise-Grade Instant Messaging System**. It serves as a master blueprint for scalable real-time systems, leveraging microservices to ensure independent scalability and high availability.
+
+This platform is architected as an **Enterprise-Grade Instant Messaging System** — a master blueprint for scalable real-time systems, leveraging microservices to ensure independent scalability and high availability.
 
 ### 💼 Business Impact
+
 - **Instant Engagement**: Sub-second message delivery ensures seamless user interaction.
 - **Scalable Growth**: Microservices architecture allows scaling the Chat Service independently during peak usage.
 - **Data Integrity**: Distributed persistence ensures messages are never lost, even during regional outages.
 
 ### 🛠 Technical Excellence
-- **Low-Latency**: Powered by **Socket.io** for bidirectional, persistent connections.
-- **Event-Driven Resilience**: Utilizes **Apache Kafka** for reliable cross-service communication (e.g., triggering notifications).
-- **Observability First**: Deep visibility with **Prometheus**, **Grafana**, and the **ELK Stack** for real-time monitoring.
+
+- **Low-Latency**: Powered by **Socket.io** for bidirectional, persistent WebSocket connections.
+- **Event-Driven Resilience**: Utilizes **Apache Kafka** (KRaft mode, no ZooKeeper) for reliable cross-service communication.
+- **Observability First**: Deep visibility with **Prometheus**, **Grafana**, **ELK Stack**, and **Jaeger** tracing.
+- **Secure by Default**: MongoDB authentication enforced via `MONGO_INITDB_ROOT_USERNAME/PASSWORD`; JWT secrets externalized to `.env`.
 
 ---
 
 ## 🏗 System Architecture
-The application follows a **Distributed Microservices Architecture** with an Event-Driven backbone.
 
 ```mermaid
 graph TD
-    User((User / Client)) -->|WebSocket / HTTP| Gateway[API Gateway / BFF]
+    User((User / Client)) -->|WebSocket / HTTP| Gateway[API Gateway :8080]
     Gateway -->|Proxy| AuthSvc[Auth Service]
     Gateway -->|Proxy| UserSvc[User Service]
     Gateway -->|Socket.io| ChatSvc[Chat Service]
-    
-    AuthSvc -->|Mongoose| AuthDB[(MongoDB Auth)]
-    UserSvc -->|Mongoose| UserDB[(MongoDB User)]
-    ChatSvc -->|Mongoose| ChatDB[(MongoDB Chat)]
-    
-    ChatSvc -->|Event| Kafka{Apache Kafka}
-    Kafka -->|Message Created| NotificationSvc[Notification Service]
-    
+
+    AuthSvc -->|Mongoose + Auth| AuthDB[(MongoDB :27017\n/auth)]
+    UserSvc -->|Mongoose + Auth| UserDB[(MongoDB :27017\n/user)]
+    ChatSvc -->|Mongoose + Auth| ChatDB[(MongoDB :27017\n/chat)]
+
+    ChatSvc -->|MessageCreated Event| Kafka{Apache Kafka\n:9092}
+    Kafka -->|Consume| NotificationSvc[Notification Service]
+
     subgraph "Observability Layer"
-        AllServices -.->|Metrics| Prometheus[Prometheus]
-        AllServices -.->|Logs| ELK[ELK Stack]
+        AllServices -..->|Metrics| Prometheus[Prometheus :9090]
+        AllServices -..->|Logs| ELK[Kibana :5601]
+        AllServices -..->|Traces| Jaeger[Jaeger :16686]
+        Prometheus -..-> Grafana[Grafana :3000]
     end
 ```
 
-### 📖 Deep Dive: How It Works
-- **The Real-time Pulse**: Users connect via WebSockets to the **Chat Service**. Messages are persisted in **MongoDB** and simultaneously broadcasted to active room members.
-- **Async Notifications**: Every message triggers a Kafka event. The **Notification Service** consumes these events to trigger push notifications or external alerts without blocking the chat flow.
-- **Shared Resilience**: A unified `shared` library ensures consistent error handling, auth middleware, and event schemas across all services.
+### 📖 How It Works
+
+- **Real-time Pulse**: Users connect via WebSockets to the **Chat Service**. Messages are persisted in MongoDB and simultaneously broadcast to active room members.
+- **Async Notifications**: Every message triggers a Kafka event. The **Notification Service** consumes these events and handles push notifications without blocking the chat flow.
+- **Shared Resilience**: A unified `shared/` library provides consistent error handling, auth middleware, and Kafka event schemas across all services.
 
 ---
 
-## 🛠 Advanced Tech Stack
-| Category | Technology |
-| :--- | :--- |
-| **Frontend** | React 18, TypeScript, Vite, Vanilla CSS (Premium) |
-| **Backend** | Node.js 20, Express, TypeScript |
-| **Real-time** | **Socket.io** (WebSockets) |
-| **Databases** | **MongoDB** (Distributed Persistence) |
-| **Messaging** | **Apache Kafka** (Event Broker) |
-| **Observability** | **Prometheus**, **Grafana**, **ELK Stack**, Jaeger |
-| **Service Mesh** | **Istio** (mTLS, Traffic Management) |
-| **Orchestration** | **Kubernetes** (EKS/GKE/AKS), Helm Charts |
-| **Automation** | **Terraform**, **Docker**, ArgoCD (GitOps) |
-| **Unit Testing** | **Jest** (Node.js/React) |
-| **E2E Testing** | **Playwright** |
-| **Linting** | **ESLint** |
+## 🛠 Tech Stack
+
+| Category             | Technology                               |
+| :------------------- | :--------------------------------------- |
+| **Frontend**         | React 18, TypeScript, Vite               |
+| **Backend**          | Node.js 20, Express, TypeScript          |
+| **Real-time**        | Socket.io (WebSockets)                   |
+| **Database**         | MongoDB (auth-guarded, per-service DBs)  |
+| **Messaging**        | Apache Kafka (KRaft mode — no ZooKeeper) |
+| **Observability**    | Prometheus, Grafana, ELK Stack, Jaeger   |
+| **Service Mesh**     | Istio (mTLS, Traffic Management)         |
+| **Orchestration**    | Kubernetes (EKS/GKE/AKS), Helm Charts    |
+| **GitOps**           | ArgoCD                                   |
+| **IaC**              | Terraform                                |
+| **Containerization** | Docker, Docker Compose                   |
+| **Testing**          | Jest (unit), Playwright (E2E)            |
+| **Linting**          | ESLint                                   |
 
 ---
 
-## 📂 Project Blueprint
+## 📂 Repository Structure
+
 ```text
-├── services/                 # Backend Microservices
+mern-realtime-chat/
+├── services/
 │   ├── auth-service/         # JWT & Identity Management
 │   ├── user-service/         # User Profile Management
-│   ├── chat-service/         # WebSocket & Message Hub
-│   └── notification-service/ # Event Consumer for Alerts
+│   ├── chat-service/         # WebSocket Hub & Message Persistence
+│   └── notification-service/ # Kafka Consumer for Push Alerts
 ├── api-gateway/              # Unified Entry Point (BFF)
 ├── frontend/                 # React Premium UI
 ├── shared/                   # Common Library (Errors, Events, Middleware)
-├── infra/                    # Infrastructure as Code
-│   ├── kubernetes/           # K8s Manifests (Base/Overlays)
-│   ├── helm/                 # Modular Charts
-│   └── terraform/            # Cloud Provisioning (VPC, EKS)
-└── events/                   # Kafka Topic & Schema Configs
+├── events/                   # Kafka Topic & Schema Configs
+├── infra/
+│   ├── docker/               # Per-service Dockerfiles
+│   ├── kubernetes/
+│   │   ├── base/             # Base K8s Manifests
+│   │   ├── overlays/         # Environment Overlays (Kustomize)
+│   │   └── namespaces/       # Namespace Definitions
+│   ├── helm/                 # Modular Helm Charts
+│   ├── terraform/            # Cloud Provisioning (VPC, EKS)
+│   ├── istio/                # Service Mesh Config
+│   ├── argocd/               # GitOps Application Manifests
+│   └── observability/
+│       ├── prometheus/
+│       ├── grafana/
+│       ├── elk/
+│       └── tracing/
+├── scripts/
+│   └── setup.sh              # Dependency bootstrap script
+├── docker-compose.yml        # Full local stack
+└── .env                      # Local secrets (not committed)
 ```
 
 ---
 
 ## 🚀 Quick Start
-### 🐳 Method 1: Docker Compose (Recommended)
-```bash
-# Deploy the full ecosystem
-docker-compose up --build -d
 
-# Check service status
-docker-compose ps
+### Prerequisites
+
+- [Docker Desktop](https://www.docker.com/products/docker-desktop/) ≥ 24
+- [Node.js](https://nodejs.org/) ≥ 20 (for local dev only)
+
+### ⚙️ Step 1 — Configure Environment
+
+Copy the example env file and update credentials before starting:
+
+```bash
+# The .env file is auto-loaded by Docker Compose
+cp .env .env.local   # optional backup
 ```
 
-### 🛠 Method 2: Local Development
+Default `.env` values:
+
+```env
+MONGO_USERNAME=admin
+MONGO_PASSWORD=changeme
+JWT_KEY=changeme_jwt_secret
+```
+
+> ⚠️ **Change these values** before deploying to any non-local environment. `.env` is already in `.gitignore`.
+
+### 🐳 Step 2 — Start with Docker Compose (Recommended)
+
 ```bash
-# 1. Run the setup script to install all dependencies
+# Start the full ecosystem (builds all services)
+docker compose up -d --build
+
+# Verify all containers are healthy
+docker compose ps
+
+# Tail logs from all services
+docker compose logs -f
+
+# Tear down
+docker compose down
+```
+
+**Expected running containers after `up`:**
+
+| Container      | Port    | Role                               |
+| :------------- | :------ | :--------------------------------- |
+| `mongodb`      | `27017` | Primary datastore (auth-protected) |
+| `kafka`        | `9092`  | Event broker (KRaft mode)          |
+| `auth-service` | —       | JWT auth (internal)                |
+| `user-service` | —       | User profiles (internal)           |
+| `chat-service` | —       | WebSocket & messaging (internal)   |
+| `api-gateway`  | `8080`  | Public entry point                 |
+
+### 🛠 Step 3 — Local Development (Per-Service)
+
+```bash
+# 1. Bootstrap all service dependencies
 ./scripts/setup.sh
 
-# 2. Start infra only
-docker-compose up -d mongodb kafka
+# 2. Start only the infrastructure (DB + Kafka)
+docker compose up -d mongodb kafka
 
-# 3. Run a specific service (e.g., Auth)
+# 3. Run a specific service locally
 cd services/auth-service && npm start
 ```
 
 ---
 
-## 📥 API Intelligence & Reference
-The API is exposed via the **API Gateway** on port `8080`.
+## 📡 API Reference
 
-### Example Endpoints
-| Feature | Endpoint | Method | Result |
-| :--- | :--- | :--- | :--- |
-| **Auth** | `/api/users/signup` | `POST` | Register & Get JWT |
-| **User** | `/api/users/profile` | `GET` | Retrieve Profile Data |
-| **Chat** | `/socket.io` | `WS` | Establish Real-time Stream |
-| **History** | `/api/chat/messages` | `GET` | Fetch Chat History |
+All endpoints are exposed via the **API Gateway** on `http://localhost:8080/`.
 
----
+| Feature       | Method | Endpoint             | Description                               |
+| :------------ | :----- | :------------------- | :---------------------------------------- |
+| **Register**  | `POST` | `/api/users/signup`  | Register a new user & receive JWT         |
+| **Login**     | `POST` | `/api/users/signin`  | Authenticate & receive JWT                |
+| **Profile**   | `GET`  | `/api/users/profile` | Retrieve the authenticated user's profile |
+| **Messages**  | `GET`  | `/api/chat/messages` | Fetch paginated chat history              |
+| **WebSocket** | `WS`   | `/socket.io`         | Establish real-time bidirectional stream  |
 
-## 📊 Observability Matrix
-- **Metrics**: `http://localhost:9090` (Prometheus)
-- **Visualizations**: `http://localhost:3000` (Grafana)
-- **Centralized Logs**: `http://localhost:5601` (Kibana)
-- **Distributed Traces**: `http://localhost:16686` (Jaeger)
+### Example WebSocket Message Payload
 
----
-
-## 🛡️ Enterprise Quality Assurance
-```bash
-# Run unit & integration tests
-npm test --all
-
-# Static Code Analysis
-npm run lint
-```
-
----
-
-## ☁️ Cloud Portability
-- **AWS**: EKS, MSK (Kafka), DocumentDB (MongoDB)
-- **Azure**: AKS, Event Hubs, CosmosDB
-- **GCP**: GKE, Cloud Pub/Sub, Cloud Memorystore
-
----
-
-## 🏁 Expected Results
-1. **Zero-Latency**: Chat interactions feel instantaneous to the end-user.
-2. **Scalability**: Capable of handling 100k+ concurrent WebSocket connections.
-3. **Resilience**: Kafka buffering ensures no notifications are lost during spikes.
-4. **Visibility**: 100% of request flows are traceable via Jaeger and ELK.
-
----
-
-## 📥 Expected API Output (Verification)
-### Chat Message Flow
-`WS Emit 'message'` -> `io.emit('message')`
 ```json
 {
   "id": "MSG-550e8400-e29b",
   "senderId": "user_123",
   "text": "Hello, world! ⚡",
-  "timestamp": "2026-04-22T00:42:00Z"
+  "timestamp": "2026-05-09T10:00:00Z"
 }
 ```
-**Side Effect**: In the `notification-service` logs:
-`[notification] INFO: Consumed MessageCreated event for MSG-550e8400-e29b. Sending push notification...`
 
 ---
 
-## 🔧 Troubleshooting & Recovery
-| Issue | Potential Cause | Resolution |
-| :--- | :--- | :--- |
-| **WebSocket Connection Failed** | Ingress or Gateway config | Check `api-gateway` logs and ensure `ws: true` is set in proxy. |
-| **Kafka Connection Error** | Broker not ready | Ensure Kafka container is healthy via `docker-compose ps`. |
-| **401 Unauthorized** | Expired/Missing JWT | Clear cookies and re-login via the Auth Service. |
-| **Mongo Connection Timeout** | Database not initialized | Check MongoDB logs and ensure volume permissions are correct. |
+## 📊 Observability Stack
+
+| Tool           | URL                      | Purpose                     |
+| :------------- | :----------------------- | :-------------------------- |
+| **Prometheus** | `http://localhost:9090`  | Metrics scraping & alerting |
+| **Grafana**    | `http://localhost:3000`  | Dashboards & visualization  |
+| **Kibana**     | `http://localhost:5601`  | Centralized log search      |
+| **Jaeger**     | `http://localhost:16686` | Distributed request tracing |
 
 ---
 
-## 🏁 Expected Results
-1. **Unified Real-time Experience**: A seamless, low-latency chat interface for all users.
-2. **Horizontal Scalability**: Kubernetes-ready for auto-scaling based on WebSocket traffic.
-3. **Event Integrity**: Zero-loss notification delivery via Kafka's resilient buffering.
-4. **Engineering Excellence**: 100% test coverage for core business logic and event flows.
+## 🛡️ Quality Assurance
+
+```bash
+# Run all unit & integration tests
+npm test --workspaces
+
+# Static code analysis
+npm run lint --workspaces
+
+# Type checking
+npm run typecheck --workspaces
+```
 
 ---
 
-## 🚀 Future Roadmap: Next Level Enhancements
-1. **🔐 End-to-End Encryption**: Implement Signal Protocol for secure, private messaging.
-2. **📞 Voice/Video Calls**: Integrate WebRTC for high-quality real-time media streaming.
-3. **🤖 AI Moderation**: Add an AI service for automated content filtering and sentiment analysis.
-4. **📦 Multi-Cloud Deployment**: Automated GitOps pipelines for AWS, Azure, and GCP.
-5. **📜 Rich Media**: Support for file sharing, link previews, and interactive message components.
+## ☁️ Cloud Deployment Targets
+
+| Cloud     | Kubernetes | Kafka         | MongoDB         |
+| :-------- | :--------- | :------------ | :-------------- |
+| **AWS**   | EKS        | MSK           | DocumentDB      |
+| **Azure** | AKS        | Event Hubs    | Cosmos DB       |
+| **GCP**   | GKE        | Cloud Pub/Sub | Atlas (managed) |
+
+GitOps delivery is managed via **ArgoCD** with manifests in `infra/argocd/`.
+
+---
+
+## 🔧 Troubleshooting
+
+| Symptom                          | Likely Cause                  | Resolution                                                                                                               |
+| :------------------------------- | :---------------------------- | :----------------------------------------------------------------------------------------------------------------------- |
+| `bitnami/kafka:latest not found` | Image removed from Docker Hub | ✅ Fixed — now uses `apache/kafka:latest`                                                                                |
+| **WebSocket Connection Failed**  | Gateway misconfiguration      | Check `api-gateway` logs; ensure `ws: true` in proxy config                                                              |
+| **Kafka Connection Error**       | Broker not ready              | Wait for `kafka` container to be healthy: `docker compose ps`                                                            |
+| **401 Unauthorized**             | Expired or missing JWT        | Clear cookies and re-authenticate via `/api/users/signin`                                                                |
+| **MongoDB Auth Failed**          | Credentials mismatch          | Ensure `.env` values match what's in `docker-compose.yml`; restart with `docker compose down -v && docker compose up -d` |
+| **Service fails to start**       | MongoDB not yet healthy       | Services use `condition: service_healthy` — MongoDB healthcheck must pass first                                          |
+
+---
+
+## 🚀 Roadmap
+
+| Priority        | Feature                      | Description                                                     |
+| :-------------- | :--------------------------- | :-------------------------------------------------------------- |
+| 🔥 High         | **🔐 End-to-End Encryption** | Implement Signal Protocol for private messaging                 |
+| 🔥 High         | **📞 Voice/Video Calls**     | WebRTC integration for real-time media streaming                |
+| 🟡 Medium       | **🤖 AI Moderation**         | Automated content filtering and sentiment analysis              |
+| 🟡 Medium       | **📦 Multi-Cloud GitOps**    | ArgoCD pipelines targeting AWS, Azure, and GCP simultaneously   |
+| 🟢 Nice-to-have | **📜 Rich Media**            | File sharing, link previews, and interactive message components |
+| 🟢 Nice-to-have | **🌐 Internationalization**  | Multi-language support via i18n                                 |
+
+---
+
+## 📄 License
+
+This project is licensed under the [MIT License](https://opensource.org/licenses/MIT).
